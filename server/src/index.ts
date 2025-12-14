@@ -1,43 +1,23 @@
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { auth } from "@/lib/auth";
-import { sessionMiddleware, type AuthVariables } from "@/middleware/auth.middleware";
-import { apiRoutes } from "@/routes";
+import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import type { ApiResponse } from 'shared/dist'
 
-const app = new Hono<{
-  Variables: AuthVariables;
-}>();
+const app = new Hono()
 
-app.use(
-  "/api/*",
-  cors({
-    origin: "http://localhost:5173",
-    allowHeaders: ["Content-Type", "Authorization"],
-    allowMethods: ["POST", "GET", "PUT", "DELETE", "OPTIONS"],
-    exposeHeaders: ["Content-Length"],
-    maxAge: 600,
-    credentials: true,
-  })
-);
+app.use(cors())
 
-// Session middleware - attaches user/session to all requests
-app.use("*", sessionMiddleware);
+app.get('/', (c) => {
+  return c.text('Hello Hono!')
+})
 
-// Better Auth routes
-app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
+app.get('/hello', async (c) => {
 
-// Session check endpoint
-app.get("/api/session", (c) => {
-  const user = c.get("user");
-  const session = c.get("session");
-
-  if (!user) {
-    return c.json({ success: false, message: "Not authenticated" }, 401);
+  const data: ApiResponse = {
+    message: "Hello BHVR!",
+    success: true
   }
 
-  return c.json({ success: true, session, user });
-});
+  return c.json(data, { status: 200 })
+})
 
-app.route("/api", apiRoutes);
-
-export default app;
+export default app
