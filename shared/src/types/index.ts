@@ -1,6 +1,4 @@
-// export type ApiResponse = {
-//   message: string;
-//   success: true;
-// }
-
-export * from "./schema";
+export type ApiResponse = {
+  message: string;
+  success: true;
+}
