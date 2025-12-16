@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { createSitter, findSitterByUserId, findOwnerByUserId } from "@/models/sitter.model";
+import { createSitter, findSitterByUserId, findOwnerByUserId, updateOwnerIsSitter } from "@/models/sitter.model";
 
 export const createSitterProfile = async (c: Context) => {
     const user = c.get("user");
@@ -12,6 +12,9 @@ export const createSitterProfile = async (c: Context) => {
     if (existingSitter) {
         return c.json({ success: false, message: "Already registered as sitter" }, 400);
     }
+    if (!existingSitter) {
+        return c.json({ success: false, message: "Sitter profile not found" }, 404);
+    }
 
     // Get owner data from pet_owner table
     const owner = await findOwnerByUserId(user.id);
@@ -22,6 +25,7 @@ export const createSitterProfile = async (c: Context) => {
     // Get all required fields from request body
     const body = await c.req.json();
     const {
+        phoneNumber,
         headline,
         bio,
         address,
@@ -43,7 +47,7 @@ export const createSitterProfile = async (c: Context) => {
         userId: user.id,
         displayName: owner.displayName,
         displayImage: owner.displayImage,
-        phoneNumber: owner.phoneNumber,
+        phoneNumber,
         headline,
         bio: bio ?? null,
         address,
@@ -59,6 +63,9 @@ export const createSitterProfile = async (c: Context) => {
         acceptsOtherPets: acceptsOtherPets ?? false,
         nidImage,
     });
+
+    // Update owner's isSitter flag to true
+    await updateOwnerIsSitter(user.id);
 
     return c.json({ success: true, sitter }, 201);
 };

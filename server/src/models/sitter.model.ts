@@ -36,3 +36,11 @@ export const findOwnerByUserId = async (userId: string) => {
         .limit(1);
     return owner[0] ?? null;
 };
+
+// Update owner's isSitter flag to true
+export const updateOwnerIsSitter = async (userId: string) => {
+    await db
+        .update(petOwnerTable)
+        .set({ isSitter: true })
+        .where(eq(petOwnerTable.userId, userId));
+};
