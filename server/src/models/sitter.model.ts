@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { petSitterTable, petOwnerTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import type { NewPetSitter } from "shared/types/schema";
+import type { NewPetSitter } from "shared/dist";
 
 // Find sitter by user ID
 export const findSitterByUserId = async (userId: string) => {
@@ -9,16 +9,6 @@ export const findSitterByUserId = async (userId: string) => {
         .select()
         .from(petSitterTable)
         .where(eq(petSitterTable.userId, userId))
-        .limit(1);
-    return sitter[0] ?? null;
-};
-
-// Find sitter by ID
-export const findSitterById = async (id: number) => {
-    const sitter = await db
-        .select()
-        .from(petSitterTable)
-        .where(eq(petSitterTable.id, id))
         .limit(1);
     return sitter[0] ?? null;
 };
