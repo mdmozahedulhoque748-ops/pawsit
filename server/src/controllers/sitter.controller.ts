@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { createSitter, findSitterByUserId, findSitterById, findOwnerByUserId, updateOwnerIsSitter } from "@/models/sitter.model";
+import { createSitter, findSitterByUserId, findOwnerByUserId, updateOwnerIsSitter } from "@/models/sitter.model";
 
 export const createSitterProfile = async (c: Context) => {
     const user = c.get("user");
@@ -62,9 +62,15 @@ export const createSitterProfile = async (c: Context) => {
     });
 
     // Update owner's isSitter flag to true
-    await updateOwnerIsSitter(user.id);
-
-    return c.json({ success: true, sitter }, 201);
+    if (sitter) {
+        await updateOwnerIsSitter(user.id);
+        return c.json({ success: true, sitter }, 201);
+    } else {
+        return c.json(
+            { success: false, message: "Sitter profile not created" },
+            500
+        );
+    }
 };
 
 // Get sitter profile
