@@ -1,9 +1,10 @@
 import { Hono } from "hono";
-import { getOwnerProfile } from "@/controllers/owner.controller";
+import { getOwnerProfile, createOwnerApi } from "@/controllers/owner.controller";
 
 const ownerRoutes = new Hono();
 
 ownerRoutes.get("/profile", getOwnerProfile);
+ownerRoutes.post("/create", createOwnerApi);
 
 
 

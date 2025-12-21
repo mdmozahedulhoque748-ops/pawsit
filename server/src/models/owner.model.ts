@@ -11,3 +11,11 @@ export const findOwnerById = async (userId: string) => {
         .limit(1);
     return owner[0] ?? null;
 }
+
+export const createOwner = async (userData: any) => {
+    const newUser = await db
+        .insert(user)
+        .values(userData)
+        .returning();
+    return newUser[0] ?? null;
+}
