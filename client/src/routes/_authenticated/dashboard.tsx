@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { signOutUser } from "../../lib/auth";
 import { InitialPopUpForm } from "@/components/InitialPopUpForm";
 import { useOwner, useCreateOwner } from "@/hooks/useOwner";
@@ -41,7 +41,7 @@ function Dashboard() {
 
   const showPopup = !owner;
 
-  const isSitter = false;
+  const isSitter = owner?.isSitter;
 
   // Get user info from auth context
   const userName = auth.user?.name || "User";
@@ -81,9 +81,11 @@ function Dashboard() {
           {/* Right Section */}
           <div className="flex items-center gap-4">
             {/* Sitter Button */}
-            <Button variant="outline">
-              {isSitter ? "Sitter Dashboard" : "Become a Sitter"}
-            </Button>
+            <Link to="/sitter/dashboard">
+              <Button variant="outline">
+                {isSitter ? "Sitter Dashboard" : "Become a Sitter"}
+              </Button>
+            </Link>
 
             {/* Profile Dropdown */}
             <DropdownMenu>
