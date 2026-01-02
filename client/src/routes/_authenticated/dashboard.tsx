@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as z from "zod";
 import { useOwner, useCreateOwner } from "@/hooks/useOwner";
 import { Spinner } from "@/components/ui/spinner";
@@ -17,6 +17,7 @@ const dashboardSearchSchema = z.object({
   lng: z.number().optional(),
   radius: z.number().optional(),
   filters: z.array(z.string()).optional().default(["All"]),
+  channelId: z.string().optional(),
 });
 
 type DashboardSearch = z.infer<typeof dashboardSearchSchema>;
@@ -33,6 +34,13 @@ function Dashboard() {
   const { data: owner, isPending: isOwnerLoading } = useOwner();
   const createOwner = useCreateOwner();
   const [activeTab, setActiveTab] = useState("dashboard");
+
+  // Sync activeTab with channelId search param
+  useEffect(() => {
+    if (search.channelId) {
+      setActiveTab("messages");
+    }
+  }, [search.channelId]);
 
   const [bookedSitterIds, setBookedSitterIds] = useState<number[]>([]);
 

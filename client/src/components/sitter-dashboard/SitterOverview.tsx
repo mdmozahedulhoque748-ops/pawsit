@@ -8,9 +8,14 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useSitterBookings, useAcceptBooking } from "@/hooks/useBooking";
+import { bookingApi } from "@/api/endpoints/booking";
 import { Spinner } from "@/components/ui/spinner";
 
-export function SitterOverview() {
+interface SitterOverviewProps {
+    setActiveTab: (tab: string) => void;
+}
+
+export function SitterOverview({ setActiveTab }: SitterOverviewProps) {
     const [isAvailable, setIsAvailable] = useState(true);
     const [isPriceEditing, setIsPriceEditing] = useState(false);
     const [dailyCharge, setDailyCharge] = useState(1200);
@@ -32,6 +37,20 @@ export function SitterOverview() {
 
     const handleAccept = async (id: number) => {
         await acceptBooking.mutateAsync(id);
+    };
+
+    const handleChatClick = async (bookingId: number) => {
+        try {
+            // Ensure channel exists before navigating
+            await bookingApi.initializeChat(bookingId);
+            // Switch to messages tab and set channelId in URL
+            setActiveTab("messages");
+            const url = new URL(window.location.href);
+            url.searchParams.set("channelId", `booking_${bookingId}`);
+            window.history.pushState({}, "", url.toString());
+        } catch (error) {
+            console.error("Failed to initialize chat:", error);
+        }
     };
 
     return (
@@ -221,7 +240,12 @@ export function SitterOverview() {
                                         )}>
                                             Accepted
                                         </Badge>
-                                        <Button variant="outline" size="icon" className="h-8 w-8 rounded-md">
+                                        <Button 
+                                            variant="outline" 
+                                            size="icon" 
+                                            onClick={() => handleChatClick(a.id)}
+                                            className="h-8 w-8 rounded-md"
+                                        >
                                             <MessageCircle className="w-4 h-4" />
                                         </Button>
                                     </div>

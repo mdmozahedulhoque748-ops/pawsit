@@ -11,9 +11,14 @@ import {
 import { useAuth } from "@/lib/auth";
 import { AppChannelHeader } from "@/components/chat/AppChannelHeader";
 
+
 export function SitterInbox() {
     const chatClient = useStreamChat();
     const { user } = useAuth();
+
+    // Note: When navigating here with channelId from URL, the initializeChat endpoint
+    // should have already been called to ensure the channel exists and user has access.
+    // The ChannelList will show the channel and user can select it.
 
     if (!chatClient || !user) {
         return (
