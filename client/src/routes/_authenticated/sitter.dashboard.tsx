@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useSitter } from "@/hooks/useSitter"
 import { Spinner } from "@/components/ui/spinner"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import * as z from "zod";
 import { SitterRegistrationForm } from "@/components/sitter-dashboard/SitterRegistrationForm"
 import { SitterSidebar } from "@/components/sitter-dashboard/SitterSidebar"
 import { SitterHeader } from "@/components/sitter-dashboard/SitterHeader"
@@ -12,14 +13,27 @@ import { SitterGallery } from "@/components/sitter-dashboard/SitterGallery"
 import { SitterSettings } from "@/components/sitter-dashboard/SitterSettings"
 import { useAuth } from "@/lib/auth"
 
+const sitterDashboardSearchSchema = z.object({
+  channelId: z.string().optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/sitter/dashboard")({
+  validateSearch: (search) => sitterDashboardSearchSchema.parse(search),
   component: SitterDashboardRoot,
 })
 
 function SitterDashboardRoot() {
   const { data: sitter, isPending: isSitterLoading } = useSitter()
   const { user } = useAuth()
+  const search = Route.useSearch()
   const [activeTab, setActiveTab] = useState("dashboard")
+
+  // Sync activeTab with channelId search param
+  useEffect(() => {
+    if (search.channelId) {
+      setActiveTab("messages")
+    }
+  }, [search.channelId])
 
   if (isSitterLoading) {
     return (
@@ -38,7 +52,7 @@ function SitterDashboardRoot() {
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <SitterOverview />
+        return <SitterOverview setActiveTab={setActiveTab} />
       case "messages":
         return <SitterInbox />
       case "reviews":
@@ -48,7 +62,7 @@ function SitterDashboardRoot() {
       case "profile":
         return <SitterSettings sitter={sitter} user={user} />
       default:
-        return <SitterOverview />
+        return <SitterOverview setActiveTab={setActiveTab} />
     }
   }
 

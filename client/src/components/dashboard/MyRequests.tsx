@@ -3,11 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { toast } from "sonner";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useOwnerBookings, useDeleteBooking } from "@/hooks/useBooking";
+import { bookingApi } from "@/api/endpoints/booking";
 import { useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
+import { ReviewModal } from "./ReviewModal";
 
 interface MyRequestsProps {
     setActiveTab: (tab: string) => void;
@@ -17,6 +18,7 @@ export function MyRequests({ setActiveTab }: MyRequestsProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const { data: bookings, isLoading } = useOwnerBookings();
     const deleteBooking = useDeleteBooking();
+    const [selectedBooking, setSelectedBooking] = useState<{ id: number, sitterName: string } | null>(null);
 
     const filteredBookings = bookings?.filter(b => 
         b.sitterName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -26,6 +28,20 @@ export function MyRequests({ setActiveTab }: MyRequestsProps) {
     const handleDelete = async (id: number) => {
         if (confirm("Are you sure you want to cancel this booking request?")) {
             await deleteBooking.mutateAsync(id);
+        }
+    };
+
+    const handleChatClick = async (bookingId: number) => {
+        try {
+            // Ensure channel exists before navigating
+            await bookingApi.initializeChat(bookingId);
+            // Switch to messages tab and set channelId in URL
+            setActiveTab("messages");
+            const url = new URL(window.location.href);
+            url.searchParams.set("channelId", `booking_${bookingId}`);
+            window.history.pushState({}, "", url.toString());
+        } catch (error) {
+            console.error("Failed to initialize chat:", error);
         }
     };
 
@@ -98,23 +114,25 @@ export function MyRequests({ setActiveTab }: MyRequestsProps) {
                                 </Badge>
                                 
                                 {req.isAccepted ? (
-                                    <Button
-                                        size="sm"
-                                        onClick={() => toast.info("Payment feature coming soon!")}
-                                        className="h-8 px-4 text-xs font-semibold"
-                                    >
-                                        Pay
-                                    </Button>
-                                ) : (
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-2">
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => setActiveTab("messages")}
+                                            onClick={() => handleChatClick(req.id)}
                                             className="h-8 w-8 text-muted-foreground hover:text-primary"
                                         >
                                             <MessageSquare className="w-4 h-4" />
                                         </Button>
+                                        <Button
+                                            size="sm"
+                                            onClick={() => setSelectedBooking({ id: req.id, sitterName: req.sitterName || "Sitter" })}
+                                            className="h-8 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-lg"
+                                        >
+                                            Review
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-1">
                                         <Button
                                             variant="ghost"
                                             size="icon"
@@ -131,6 +149,15 @@ export function MyRequests({ setActiveTab }: MyRequestsProps) {
                     </Card>
                 ))}
             </div>
+
+            {selectedBooking && (
+                <ReviewModal
+                    isOpen={!!selectedBooking}
+                    onClose={() => setSelectedBooking(null)}
+                    bookingId={selectedBooking.id}
+                    sitterName={selectedBooking.sitterName}
+                />
+            )}
         </div>
     );
 }

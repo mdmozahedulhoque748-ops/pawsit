@@ -5,6 +5,7 @@ import {
     getSitterBookings,
     acceptBookingRequest,
     deleteBookingRequest,
+    initializeChatChannel,
 } from "@/controllers/booking.controller";
 
 const bookingRoutes = new Hono();
@@ -23,5 +24,8 @@ bookingRoutes.patch("/:id/accept", acceptBookingRequest);
 
 // DELETE - Delete booking request (owner)
 bookingRoutes.delete("/:id", deleteBookingRequest);
+
+// POST - Initialize chat channel for a booking
+bookingRoutes.post("/:id/chat", initializeChatChannel);
 
 export { bookingRoutes };
