@@ -247,3 +247,43 @@ export const deleteBookingRequest = async (c: Context) => {
         return c.json({ success: false, message: "Internal server error" }, 500);
     }
 };
+
+// Initialize chat channel for a booking (creates if doesn't exist)
+export const initializeChatChannel = async (c: Context) => {
+    const user = c.get("user");
+    if (!user) {
+        return c.json({ success: false, message: "Not authenticated" }, 401);
+    }
+
+    const bookingIdStr = c.req.param("id");
+    const bookingId = parseInt(bookingIdStr);
+
+    if (isNaN(bookingId)) {
+        return c.json({ success: false, message: "Invalid booking ID" }, 400);
+    }
+
+    const booking = await findBookingById(bookingId);
+    if (!booking) {
+        return c.json({ success: false, message: "Booking not found" }, 404);
+    }
+
+    // Verify that the user is either the owner or sitter of this booking
+    if (booking.ownerUserId !== user.id && booking.sitterUserId !== user.id) {
+        return c.json({ success: false, message: "Not authorized" }, 403);
+    }
+
+    // Only accepted bookings should have chat
+    if (!booking.isAccepted) {
+        return c.json({ success: false, message: "Booking must be accepted to chat" }, 400);
+    }
+
+    try {
+        if (booking.ownerUserId && booking.sitterUserId) {
+            await streamService.getOrCreateChannel(bookingId, [booking.ownerUserId, booking.sitterUserId]);
+        }
+        return c.json({ success: true, channelId: `booking_${bookingId}` });
+    } catch (error) {
+        console.error("Initialize chat error:", error);
+        return c.json({ success: false, message: "Failed to initialize chat" }, 500);
+    }
+};

@@ -67,4 +67,10 @@ export const bookingApi = {
         const { data } = await apiClient.delete(`/bookings/${bookingId}`);
         return data;
     },
+
+    // Initialize chat channel (creates if needed)
+    initializeChat: async (bookingId: number): Promise<{ channelId: string }> => {
+        const { data } = await apiClient.post(`/bookings/${bookingId}/chat`);
+        return data;
+    },
 };
