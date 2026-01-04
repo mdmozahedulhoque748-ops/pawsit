@@ -6,6 +6,7 @@ import { uploadRoutes } from "./upload.routes";
 import { bookingRoutes } from "./booking.routes";
 import { chatRoutes } from "./chat.routes";
 import reviewRoutes from "./review.routes";
+import { userRoutes } from "./user.routes";
 
 const apiRoutes = new Hono();
 
@@ -34,5 +35,9 @@ apiRoutes.route("/bookings", bookingRoutes);
 // Review routes
 apiRoutes.use("/reviews/*", authGuard);
 apiRoutes.route("/reviews", reviewRoutes);
+
+// User routes
+apiRoutes.use("/users/*", authGuard);
+apiRoutes.route("/users", userRoutes);
 
 export { apiRoutes };
