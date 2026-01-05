@@ -16,9 +16,9 @@ export const sitterApi = {
             throw error;
         }
     },
-    searchSitters: async (params: { lat: number; lng: number; radius: number }) => {
-        console.log(params);
-        const { data } = await apiClient.get('/sitters/search', { params });
+    searchSitters: async (params: { lat?: number; lng?: number; radius?: number; area?: string }) => {
+        const endpoint = params.area ? '/sitters/manual-search' : '/sitters/search';
+        const { data } = await apiClient.get(endpoint, { params });
         return data.sitters;
     },
     getPhotos: async () => {
@@ -35,6 +35,7 @@ export const sitterApi = {
         phoneNumber?: string;
         headline?: string;
         bio?: string;
+        area?: string;
         experienceYears?: number;
         acceptsLargeDogs?: boolean;
         acceptsSmallDogs?: boolean;
