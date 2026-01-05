@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useSitterBookings, useAcceptBooking } from "@/hooks/useBooking";
+import { useSitterBookings, useAcceptBooking, useDeclineBooking } from "@/hooks/useBooking";
 import { bookingApi } from "@/api/endpoints/booking";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -35,8 +35,16 @@ export function SitterOverview({ setActiveTab }: SitterOverviewProps) {
         toast.success(`Charge synced: ${dailyCharge} ৳`);
     };
 
-    const handleAccept = async (id: number) => {
-        await acceptBooking.mutateAsync(id);
+    const handleAccept = (id: number) => {
+        acceptBooking.mutate(id);
+    };
+
+    const declineBooking = useDeclineBooking();
+
+    const handleDecline = (id: number) => {
+        if (confirm("Are you sure you want to decline this booking request?")) {
+            declineBooking.mutate(id);
+        }
     };
 
     const handleChatClick = async (bookingId: number) => {
@@ -195,13 +203,20 @@ export function SitterOverview({ setActiveTab }: SitterOverviewProps) {
                                         </div>
                                     </div>
                                     <div className="flex gap-2 w-full md:w-auto">
-                                        <Button variant="outline" size="sm" className="hidden sm:inline-flex rounded-md px-4 h-8 text-[11px] font-bold uppercase tracking-tight">
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            onClick={() => handleDecline(r.id)}
+                                            disabled={declineBooking.isPending || acceptBooking.isPending}
+                                            className="hidden sm:inline-flex rounded-md px-4 h-8 text-[11px] font-bold uppercase tracking-tight"
+                                        >
+                                            {declineBooking.isPending ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : null}
                                             Decline
                                         </Button>
                                         <Button 
                                             size="sm" 
                                             onClick={() => handleAccept(r.id)} 
-                                            disabled={acceptBooking.isPending}
+                                            disabled={acceptBooking.isPending || declineBooking.isPending}
                                             className="flex-1 sm:flex-none rounded-md px-6 h-8 text-[11px] font-bold uppercase tracking-tight"
                                         >
                                             {acceptBooking.isPending ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : null}
