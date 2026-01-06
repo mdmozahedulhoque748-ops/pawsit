@@ -3,6 +3,8 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
+import "stream-chat-react/dist/css/v2/index.css";
+import { AuthProvider, useAuth } from "./lib/auth";
 
 const queryClient = new QueryClient();
 
@@ -10,7 +12,11 @@ const queryClient = new QueryClient();
 import { routeTree } from "./routeTree.gen";
 
 // Create a new router instance
-const router = createRouter({ routeTree });
+const router = createRouter({
+	routeTree, context: {
+		auth: undefined!
+	}
+});
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
@@ -18,6 +24,13 @@ declare module "@tanstack/react-router" {
 		router: typeof router;
 	}
 }
+
+function InnerApp() {
+	const auth = useAuth();
+	return <RouterProvider router={router} context={{ auth }} />;
+}
+
+import { Toaster } from "sonner";
 
 const rootElement = document.getElementById("root");
 
@@ -33,7 +46,10 @@ if (!rootElement.innerHTML) {
 	root.render(
 		<StrictMode>
 			<QueryClientProvider client={queryClient}>
-				<RouterProvider router={router} />
+				<Toaster position="top-center" richColors />
+				<AuthProvider>
+					<InnerApp />
+				</AuthProvider>
 			</QueryClientProvider>
 		</StrictMode>,
 	);
