@@ -1,5 +1,7 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
+import { DonationButton } from "@/components/ui/donation-button";
+import { ReportButton } from "@/components/ui/report-button";
 
 interface HeaderProps {
     activeTab: string;
@@ -22,6 +24,8 @@ export function Header({ activeTab, userName, userImage, userInitials }: HeaderP
                 {titles[activeTab]}
             </h2>
             <div className="flex items-center gap-3">
+                <ReportButton />
+                <DonationButton />
                 <NotificationDropdown />
                 <div className="text-right hidden sm:block">
                     <p className="text-xs font-semibold text-foreground leading-none">{userName}</p>
